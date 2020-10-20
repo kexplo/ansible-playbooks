@@ -1,0 +1,87 @@
+---
+
+- name: Install WireGuard
+  become: yes
+  apt:
+    name: wireguard
+    state: latest
+    update_cache: yes
+    cache_valid_time: 86400 # 1 day
+
+- name: Enable ipv4 forward
+  become: yes
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    reload: yes
+
+- name: Read private key if wg0.conf already exists
+  block:
+    - name: Register stat /etc/wireguard/wg0.conf
+      stat:
+        path: /etc/wireguard/wg0.conf
+      register: wg0_conf_stat
+      become: yes
+
+    - block:
+      - name: Read private key
+        slurp:
+          src: /etc/wireguard/wg0.conf
+        register: reg_wg0_conf_content
+        become: yes
+
+      - name: Set wireguard_private_key fact
+        set_fact: 
+          wireguard_private_key: "{{ reg_wg0_conf_content['content'] | b64decode | regex_findall('PrivateKey = (.*)') | first }}"
+      when: wg0_conf_stat.stat.exists
+
+- name: Generate WireGuard private key
+  block:
+    - name: Run wg genkey
+      command: "wg genkey"
+      register: reg_wireguard_private_key
+      changed_when: false
+
+    - name: Set wireguard_private_key fact
+      set_fact:
+        wireguard_private_key: "{{ reg_wireguard_private_key.stdout }}"
+  when: wireguard_private_key is not defined
+
+- name: Write /etc/wireguard/wg0.conf
+  become: yes
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    mode: 0600
+  notify:
+    - Restart wireguard
+
+- name: Ensure WireGuard service
+  service:
+    name: "wg-quick@wg0"
+    state: started
+    enabled: yes
+  become: yes
+
+
+- name: Set UFW settings
+  block:
+    - name: Allow WireGuard port (UFW)
+      command: "ufw allow {{ wireguard_listen_port }}/udp"
+      become: yes
+
+    - name: Enable UFW
+      command: "ufw enable"
+      become: yes
+  when: wireguard_set_ufw_settings | bool
+
+
+- name: Get public key
+  shell: "echo {{ wireguard_private_key }} | wg pubkey"
+  register: reg_wireguard_public_key
+  changed_when: false
+
+- name: Print public key
+  debug:
+    msg: "Public key: {{ reg_wireguard_public_key.stdout }}"

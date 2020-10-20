@@ -1,0 +1,4 @@
+---
+wireguard_address: 10.10.0.1/24
+wireguard_listen_port: 54321
+wireguard_set_ufw_settings: false

@@ -1,0 +1,21 @@
+# /etc/wireguard/wg0.conf
+# 
+# {{ ansible_managed }}
+# 
+
+[Interface]
+Address = {{ wireguard_address }}
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE; ip6tables -A FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE; ip6tables -D FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+ListenPort = {{ wireguard_listen_port }}
+PrivateKey = {{ wireguard_private_key }}
+
+{% if wireguard_peers is defined %}
+{% for peer in wireguard_peers %}
+[Peer]
+# {{ peer.name }}
+PublicKey = {{ peer.public_key }}
+AllowedIPs =  {{ peer.allowed_ips }}
+
+{% endfor %}
+{% endif %}
