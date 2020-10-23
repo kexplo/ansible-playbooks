@@ -15,7 +15,7 @@ PrivateKey = {{ wireguard_private_key }}
 [Peer]
 # {{ peer.name }}
 PublicKey = {{ peer.public_key }}
-AllowedIPs =  {{ peer.allowed_ips }}
+AllowedIPs = {{ peer.allowed_ips }}
 
 {% endfor %}
 {% endif %}
