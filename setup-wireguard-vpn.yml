@@ -1,0 +1,13 @@
+---
+- name: Setup WireGuard
+  hosts: all
+  roles:
+    - role: setup-wireguard
+      # Use 'vars' in setup-wireguard-vpn.yml or Use host_vars.
+      # vars:
+      #   wireguard_address: 10.10.1.1/24
+      #   wireguard_listen_port: 55432
+      #   wireguard_peers:
+      #     - name: Client 1
+      #       public_key: REDACTED PUBLIC KEY
+      #       allowed_ips: 10.10.1.2/32
