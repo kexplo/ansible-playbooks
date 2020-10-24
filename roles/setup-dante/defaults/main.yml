@@ -1,0 +1,6 @@
+---
+# 1080 is standard SOCKS port
+dante_internal_port: 1080
+dante_internal_interface: wg0
+dante_external_interface: "{{ ansible_default_ipv4.interface }}"
+dante_ip_subnet_from: 10.10.0.0/24

@@ -1,0 +1,25 @@
+---
+- name: Install Dante
+  become: yes
+  apt:
+    name: dante-server
+    state: latest
+    update_cache: yes
+    cache_valid_time: 86400 # 1 day
+
+- name: Write config
+  become: yes
+  template:
+    src: danted.conf.j2
+    dest: /etc/danted.conf
+    owner: root
+    mode: 0600
+  notify:
+    - Restart Dante
+
+- name: Ensure Dante Service
+  become: yes
+  service:
+    name: "danted"
+    state: started
+    enabled: yes

@@ -11,3 +11,4 @@
       #     - name: Client 1
       #       public_key: REDACTED PUBLIC KEY
       #       allowed_ips: 10.10.1.2/32
+    - role: setup-dante

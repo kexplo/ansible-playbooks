@@ -9,3 +9,9 @@ wireguard_peers:
   - name: Client 1
     public_key: REDACTED PUBLIC KEY
     allowed_ips: 10.10.1.2/32
+
+# vars of setup-dante role
+dante_internal_port: 1080
+dante_internal_interface: wg0
+dante_external_interface: "{{ ansible_default_ipv4.interface }}"
+dante_ip_subnet_from: 10.10.1.0/24

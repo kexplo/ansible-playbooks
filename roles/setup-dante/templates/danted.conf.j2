@@ -1,0 +1,48 @@
+# /etc/danted.conf
+#
+# {{ ansible_managed }}
+#
+
+logoutput: stderr
+
+internal: {{ dante_internal_interface }} port = {{ dante_internal_port }}
+external: {{ dante_external_interface }}
+
+# no authentication methods
+clientmethod: none
+socksmethod: none
+
+user.privileged: proxy
+user.unprivileged: nobody
+user.libwrap: nobody
+
+
+# allow clients from WireGuard
+client pass {
+    from: {{ dante_ip_subnet_from }} to: 0.0.0.0/0
+    log: error
+}
+
+# disallow everyone else
+client block {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    log: error
+}
+
+# block connecting to loopback addresses
+socks block {
+    from: 0.0.0.0/0 to: lo0
+    log: error
+}
+
+# allow incoming connections, packets from WireGuard
+socks pass {
+    from: {{ dante_ip_subnet_from }}  to: 0.0.0.0/0
+    log: error
+}
+
+# disallow everyone else
+socks block {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    log: error
+}
